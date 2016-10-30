@@ -1,4 +1,4 @@
-# Haskell Software Engine
+# Haskell Software Engine (WIP)
 
 A 3D software renderer written in Haskell, 
 based on the tutorials of David Rousset.
