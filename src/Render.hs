@@ -15,6 +15,7 @@ import qualified Data.Vector.Storable as VS (fromList, unsafeWith)
 import qualified Data.Vector.Storable.Mutable as VM
   ( unsafeToForeignPtr0
   , write
+  , unsafeWrite
   , set
   , unsafeCast
   )
@@ -35,24 +36,20 @@ clear :: Engine ()
 clear
   = asks bBuff >>= liftIO . flip VM.set 0
 
+fromRGBA :: RGBA -> Word32
+fromRGBA (r, g, b, a)
+  = foldl' (\a -> (a `shiftL` 8 .|.)) 0 (map fromIntegral [r, g, b, a])
+
 -- | Clear the screen with a specific color
 clearWithCol :: RGBA -> Engine ()
 clearWithCol colour
   = asks bBuff >>= liftIO . flip VM.set (fromRGBA colour) . VM.unsafeCast
-  where fromRGBA :: RGBA -> Word32
-        fromRGBA (r, g, b, a)
-          = foldl' (\a -> (a `shiftL` 8 .|.)) 0 (map fromIntegral [r, g, b, a])
 
 putPixel :: RGBA -> Coordinate -> Engine ()
-putPixel (r,g,b,a) (x, y) = do
-  EngineState {..} <- ask
-
-  liftIO $ do 
-    VM.write bBuff index r
-    VM.write bBuff (index + 1) g
-    VM.write bBuff (index + 2) b
-    VM.write bBuff (index + 3) a
-    where index = (x + y * width) * 4
+putPixel colour (x, y) = do
+  buf <- asks bBuff
+  liftIO $ VM.unsafeWrite (VM.unsafeCast buf) index (fromRGBA colour)
+  where index = (x + y * width)
 
 drawPoint :: V2 Int -> Engine ()
 drawPoint (V2 x y)
