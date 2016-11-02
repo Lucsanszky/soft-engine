@@ -94,7 +94,7 @@ perspectiveLH fov aspect near far
        (V4 0 y 0 0)
        (V4 0 0 z 1)
        (V4 0 0 w 0)
-  where tanHalfFov = 1 / (tan $ fov / 2)
+  where tanHalfFov = 1 / tan (fov / 2)
         x = tanHalfFov / aspect
         y = tanHalfFov
         z = -far / (near - far)

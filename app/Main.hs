@@ -14,17 +14,30 @@ import Render.Mesh
 main :: IO ()
 main = do
   camera <- Camera <$> newIORef (V3 0 0 10)
-                      <*> newIORef (V3 0 0 0)
+                   <*> newIORef (V3 0 0 0)
 
   mesh <- Mesh <$> return "Cube"
-               <*> newIORef [ V3 (-1) 1    1
-                            , V3 1    1    1
+               <*> newIORef [ V3 (-1) 1 1
+                            , V3 1 1 1
                             , V3 (-1) (-1) 1
+                            , V3 1 (-1) 1
+                            , V3 (-1) 1 (-1)
+                            , V3 1 1 (-1)
+                            , V3 1 (-1) (-1)
                             , V3 (-1) (-1) (-1)
-                            , V3 (-1) 1    (-1)
-                            , V3 1    1    (-1)
-                            , V3 1    (-1) 1
-                            , V3 1    (-1) (-1)
+                            ]
+               <*> newIORef [ V3 0 1 2
+                            , V3 1 2 3 
+                            , V3 1 3 6 
+                            , V3 1 5 6 
+                            , V3 0 1 4 
+                            , V3 1 4 5 
+                            , V3 2 3 7 
+                            , V3 3 6 7 
+                            , V3 0 2 7 
+                            , V3 0 4 7 
+                            , V3 4 5 6 
+                            , V3 4 6 7 
                             ]
                <*> newIORef (V3 0 0 0)
                <*> newIORef (V3 0 0 0)
