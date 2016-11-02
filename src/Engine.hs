@@ -18,14 +18,14 @@ import qualified SDL (getWindowSurface, showWindow)
 engine :: Engine ()
 engine = do
   EngineState {..} <- ask
-  ms               <- liftIO $ readIORef meshes 
+  ms               <- liftIO $ readIORef meshes
   window           <- liftIO initWindow
   screen           <- liftIO $ SDL.getWindowSurface window
 
   liftIO $ SDL.showWindow window
 
   forever $ do
-    clear
+    clearWithCol (255, 0, 255, 100)
     mapM_ transform ms
     render
     present window screen

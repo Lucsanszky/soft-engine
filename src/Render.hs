@@ -8,14 +8,15 @@ module Render
   ) where
 
 import Control.Monad (when, forM_)
-import Control.Monad.Reader (ask, liftIO)
+import Control.Monad.Reader (ask, asks, liftIO)
 import Data.IORef (readIORef, writeIORef)
 import Data.Types hiding (scrnW, scrnH)
 import qualified Data.Vector.Storable as VS (fromList, unsafeWith)
-import qualified Data.Vector.Storable.Mutable as VM 
+import qualified Data.Vector.Storable.Mutable as VM
   ( unsafeToForeignPtr0
   , write
   , set
+  , unsafeCast
   )
 import Foreign (copyArray)
 import Foreign.ForeignPtr.Unsafe (unsafeForeignPtrToPtr)
@@ -26,26 +27,21 @@ import Math.LinAlg
 import Render.Camera
 import Render.Engine
 import Render.Mesh
+import Data.Word
+import Data.Bits (shiftL, (.|.))
+import Data.List (foldl')
 
 clear :: Engine ()
-clear = do
-  EngineState {..} <- ask 
+clear
+  = asks bBuff >>= liftIO . flip VM.set 0
 
-  liftIO $ VM.set bBuff 0
-
--- | Clear the screen with a specific color,
--- inefficient
+-- | Clear the screen with a specific color
 clearWithCol :: RGBA -> Engine ()
-clearWithCol (r,g,b,a) = do
-  EngineState {..} <- ask 
-  (dest, _)        <- return $ VM.unsafeToForeignPtr0 bBuff
-
-  liftIO $ VS.unsafeWith (VS.fromList lRGBA)
-         (\ src -> copyArray 
-                   (unsafeForeignPtrToPtr dest)
-                   src bufLen
-         )
-         where lRGBA = take bufLen $ cycle [r,g,b,a]
+clearWithCol colour
+  = asks bBuff >>= liftIO . flip VM.set (fromRGBA colour) . VM.unsafeCast
+  where fromRGBA :: RGBA -> Word32
+        fromRGBA (r, g, b, a)
+          = foldl' (\a -> (a `shiftL` 8 .|.)) 0 (map fromIntegral [r, g, b, a])
 
 putPixel :: RGBA -> Coordinate -> Engine ()
 putPixel (r,g,b,a) (x, y) = do
@@ -134,4 +130,3 @@ render = do
   ms               <- liftIO $ readIORef meshes
 
   mapM_ renderMesh ms
-  
